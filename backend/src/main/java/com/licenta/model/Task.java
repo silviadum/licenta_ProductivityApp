@@ -20,6 +20,9 @@ public class Task {
     private double xPosition;
     private double yPosition;
 
+    @Column(name = "sort_order")
+    private Integer sortOrder; // pentru drag & drop reordering
+
     @ManyToOne
     @JoinColumn(name = "project_id")
     private Project project;
@@ -42,6 +45,8 @@ public class Task {
     public void setxPosition(double xPosition) { this.xPosition = xPosition; }
     public double getyPosition() { return yPosition; }
     public void setyPosition(double yPosition) { this.yPosition = yPosition; }
+    public Integer getSortOrder() { return sortOrder; }
+    public void setSortOrder(Integer sortOrder) { this.sortOrder = sortOrder; }
     public Project getProject() { return project; }
     public void setProject(Project project) { this.project = project; }
 }

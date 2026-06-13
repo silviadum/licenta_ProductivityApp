@@ -1,7 +1,25 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx expo *)"
+      "Bash(npx expo *)",
+      "Bash(curl -s http://localhost:8080/api/ml/insights/1 -o NUL -w \"%{http_code}\")",
+      "Bash(curl -s http://localhost:8080/api/ml/insights/1)",
+      "Bash(python -X utf8 -c \"import sys, json; d = json.load\\(sys.stdin\\); print\\('FIELDS:', list\\(d.keys\\(\\)\\)\\); print\\('streak:', d.get\\('streak'\\)\\); print\\('bestTimeBlock:', d.get\\('bestTimeBlock'\\), '@', d.get\\('bestTimeBlockPercent'\\),'%'\\); print\\('bestWeekday:', d.get\\('bestWeekday'\\), 'score:', d.get\\('bestWeekdayScore'\\)\\); print\\('worstWeekday:', d.get\\('worstWeekday'\\)\\); print\\('bestPomoDuration:', d.get\\('bestPomoDuration'\\)\\); print\\('avgCompletedPomoDuration:', d.get\\('avgCompletedPomoDuration'\\)\\); print\\('pomoShortVsLong:', d.get\\('pomoShortVsLong'\\)\\); print\\('bestSleepHours:', d.get\\('bestSleepHours'\\), 'avg:', d.get\\('avgSleepHours'\\)\\); print\\('sleepCorrelation:', d.get\\('sleepCorrelation'\\)\\); print\\('sleepQualityCorrelation:', d.get\\('sleepQualityCorrelation'\\)\\); print\\('habitAverageRate:', d.get\\('habitAverageRate'\\),'%'\\); print\\('trend:', d.get\\('trend'\\)\\); print\\('timeline len:', len\\(d.get\\('productivityTimeline',[]\\)\\)\\); print\\('quality scores len:', len\\(d.get\\('qualityScores',[]\\)\\)\\); print\\('recs:', len\\(d.get\\('recommendations',[]\\)\\),'recommendations'\\); print\\('totals:', d.get\\('totalTasksDone'\\),'tasks,', d.get\\('totalPomoDone'\\),'pomos,', d.get\\('totalFocusMin'\\),'min focus'\\)\")",
+      "Bash(mvn -q compile -DskipTests)",
+      "Read(//c/Users/silvi/Desktop/smap/**)",
+      "Bash(javac -version)",
+      "Bash(find src *)",
+      "Read(//tmp/**)",
+      "Bash(javac -d bin -cp \"lib/jade.jar\" @/tmp/sources.txt)",
+      "Bash(ls \"/c/Users/silvi/Desktop/SMA\" 2>&1 | head -20 ; echo \"---\" ; ls \"/c/Users/silvi/Desktop/SMA/jade/lib\" 2>&1 | head)",
+      "Bash(rm -f \"/c/Users/silvi/Desktop/smap/sma_project/src/module-info.java\" \"/c/Users/silvi/Desktop/smap/sma_project/bin/module-info.class\")",
+      "Bash(mkdir -p \"/c/Users/silvi/Desktop/smap/sma_project/src/sma\" \"/c/Users/silvi/Desktop/smap/sma_project/lib\")",
+      "Bash(cp \"/c/Users/silvi/Desktop/SMA/jade/lib/jade.jar\" \"/c/Users/silvi/Desktop/smap/sma_project/lib/\")",
+      "Bash(javac -d bin -cp \"lib/jade.jar\" @/tmp/sources2.txt)",
+      "Bash(javac -d bin -cp \"lib/jade.jar\" @/tmp/s.txt)",
+      "Bash(python /c/Users/silvi/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/fb77a81c-b0b4-4a77-acd2-bea0d9f0c4d3/0338d951-2d0e-418b-9e44-667598b3eeef/skills/docx/scripts/office/validate.py /c/Users/silvi/Desktop/smap/sma_project/Raport_SMA.docx)",
+      "Bash(ls \"/c/Users/silvi/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/fb77a81c-b0b4-4a77-acd2-bea0d9f0c4d3/0338d951-2d0e-418b-9e44-667598b3eeef/skills/docx/scripts/office/\" 2>&1 | head)",
+      "Bash(python validate.py \"/c/Users/silvi/Desktop/smap/sma_project/Raport_SMA.docx\")"
     ]
   }
 }
