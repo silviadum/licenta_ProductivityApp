@@ -23,10 +23,6 @@ public class Task {
     @Column(name = "sort_order")
     private Integer sortOrder; // pentru drag & drop reordering
 
-    @ManyToOne
-    @JoinColumn(name = "project_id")
-    private Project project;
-
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Long getUserId() { return userId; }
@@ -47,6 +43,4 @@ public class Task {
     public void setyPosition(double yPosition) { this.yPosition = yPosition; }
     public Integer getSortOrder() { return sortOrder; }
     public void setSortOrder(Integer sortOrder) { this.sortOrder = sortOrder; }
-    public Project getProject() { return project; }
-    public void setProject(Project project) { this.project = project; }
 }

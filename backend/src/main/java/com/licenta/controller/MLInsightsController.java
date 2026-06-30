@@ -126,8 +126,8 @@ public class MLInsightsController {
             sumScore[dow] += e.getValue();
             cntScore[dow]++;
         }
-        String[] WD_RO = {"Luni", "Marți", "Miercuri", "Joi", "Vineri", "Sâmbătă", "Duminică"};
-        String[] WD_SHORT = {"L", "Ma", "Mi", "J", "V", "S", "D"};
+        String[] WD_RO = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+        String[] WD_SHORT = {"M", "T", "W", "T", "F", "S", "S"};
         List<Map<String, Object>> wd = new ArrayList<>();
         int bestWd = -1; double bestWdVal = -1;
         int worstWd = -1; double worstWdVal = Double.MAX_VALUE;
@@ -348,16 +348,17 @@ public class MLInsightsController {
         out.put("totalSleepLogs", sleep.size());
         out.put("activeDays", sortedDates.size());
 
-        // ── 13. Recomandări personalizate ────────────────────────────────────
+        // ── 13. Personalized recommendations ─────────────────────────────────
         List<String> recs = new ArrayList<>();
         if (bestBlock != null && tasksDone >= 3) {
-            recs.add("Ești cel mai productiv " + bestBlock.toLowerCase() + " (" + (int) bestBlockPct + "% din activitate). Programează-ți task-urile importante atunci.");
+            String blockEn = blockToEnglish(bestBlock);
+            recs.add("You're most productive in the " + blockEn + " (" + (int) bestBlockPct + "% of your activity). Schedule your important tasks then.");
         }
         if (out.get("bestWeekday") != null) {
-            recs.add("Ziua ta de top este " + out.get("bestWeekday") + ". Folosește-o pentru deep work, nu pentru ședințe.");
+            recs.add("Your top day is " + out.get("bestWeekday") + ". Use it for deep work, not meetings.");
         }
         if (out.get("worstWeekday") != null) {
-            recs.add(out.get("worstWeekday") + " e ziua cu cel mai mic scor — planifică sarcini ușoare sau odihnă.");
+            recs.add(out.get("worstWeekday") + " is your slowest day — plan light tasks or rest.");
         }
         if (out.get("pomoShortVsLong") != null) {
             @SuppressWarnings("unchecked")
@@ -365,50 +366,50 @@ public class MLInsightsController {
             String winner = (String) svl.get("winner");
             int wRate = (int) svl.get(winner + "Rate");
             int lRate = winner.equals("short") ? (int) svl.get("longRate") : (int) svl.get("shortRate");
-            String wLabel = winner.equals("short") ? "scurte (≤25m)" : "lungi (≥40m)";
-            recs.add("Sesiunile " + wLabel + " îți merg mai bine: " + wRate + "% vs " + lRate + "%. Setează durata default în profil.");
+            String wLabel = winner.equals("short") ? "short (≤25m)" : "long (≥40m)";
+            recs.add(wLabel + " sessions work better for you: " + wRate + "% vs " + lRate + "%. Set this as your default duration in profile.");
         }
         Object pearsonObj = out.get("sleepCorrelation");
         if (pearsonObj instanceof Number p && Math.abs(p.doubleValue()) > 0.20) {
             if (p.doubleValue() > 0) {
                 recs.add(String.format(Locale.ROOT,
-                        "Mai mult somn → mai multă productivitate (corelație +%.2f). Țintește %s.",
+                        "More sleep → more productivity (correlation +%.2f). Aim for %s.",
                         p.doubleValue(), out.getOrDefault("bestSleepHours", "7-8h")));
             } else {
                 recs.add(String.format(Locale.ROOT,
-                        "Atenție: somn excesiv pare să-ți scadă productivitatea (corelație %.2f). Optim: %s.",
+                        "Watch out: too much sleep seems to lower your productivity (correlation %.2f). Optimal: %s.",
                         p.doubleValue(), out.getOrDefault("bestSleepHours", "7-8h")));
             }
         }
         Object qualPearson = out.get("sleepQualityCorrelation");
         if (qualPearson instanceof Number q && Math.abs(q.doubleValue()) > 0.20) {
-            String dirText = q.doubleValue() > 0 ? "crește" : "scade";
+            String dirText = q.doubleValue() > 0 ? "rises" : "drops";
             recs.add(String.format(Locale.ROOT,
-                    "Calitate somn ↔ productivitate: r=%+.2f — productivitatea ta %s odată cu calitatea somnului.",
+                    "Sleep quality ↔ productivity: r=%+.2f — your productivity %s with sleep quality.",
                     q.doubleValue(), dirText));
         }
         if (avgCnt > 0) {
             double avg = avgSleep / avgCnt;
-            if (avg < 6.5) recs.add("Media ta de somn (" + Math.round(avg * 10) / 10.0 + "h) e sub recomandat. Țintește minim 7h.");
-            else if (avg > 9.0) recs.add("Dormi în medie peste 9h — verifică dacă e calitate sau doar timp în pat.");
+            if (avg < 6.5) recs.add("Your average sleep (" + Math.round(avg * 10) / 10.0 + "h) is below the recommendation. Aim for at least 7h.");
+            else if (avg > 9.0) recs.add("You sleep more than 9h on average — check whether it's quality or just time in bed.");
         }
         Object hrate = out.get("habitAverageRate");
         if (hrate instanceof Integer hr) {
-            if (hr < 50) recs.add("Rata habits e " + hr + "%. Redu la 2-3 habits ușoare ca să clădești consistență.");
-            else if (hr >= 80) recs.add("Habits-uri puternice (" + hr + "% rată). Adaugă unul nou când te simți pregătit.");
+            if (hr < 50) recs.add("Your habit completion rate is " + hr + "%. Cut down to 2-3 easy habits to build consistency.");
+            else if (hr >= 80) recs.add("Strong habits (" + hr + "% completion). Add a new one when you feel ready.");
         }
         Object trendObj = out.get("trend");
         if (trendObj instanceof Map<?, ?> trendMap) {
             String dir = (String) trendMap.get("direction");
             Object diff = trendMap.get("diff");
-            if ("up".equals(dir)) recs.add("📈 Productivitatea ta este în creștere (+" + diff + " puncte față de începuturi). Ține-o tot așa!");
-            else if ("down".equals(dir)) recs.add("📉 Productivitatea ta scade (" + diff + " puncte). Reanalizează-ți rutina de săptămâna asta.");
+            if ("up".equals(dir)) recs.add("📈 Your productivity is on the rise (+" + diff + " points compared to the start). Keep it up!");
+            else if ("down".equals(dir)) recs.add("📉 Your productivity is dropping (" + diff + " points). Rethink your weekly routine.");
         }
         if (streak >= 3) {
-            recs.add("🔥 Ai un streak de " + streak + " zile. Nu-l rupe — fă măcar un task minor azi.");
+            recs.add("🔥 You're on a " + streak + "-day streak. Don't break it — do at least one small task today.");
         }
         if (tasksDone < 3 && pomoDone < 3) {
-            recs.add("Avem prea puține date. Adaugă activități timp de ~7-10 zile ca să primești recomandări de calitate.");
+            recs.add("Not enough data yet. Add activities for ~7-10 days to get quality recommendations.");
         }
         out.put("recommendations", recs);
 
@@ -417,10 +418,28 @@ public class MLInsightsController {
 
     // ── Helpers ────────────────────────────────────────────────────────────────
     private static String blockFor(int h) {
-        if (h >= 5 && h < 12) return "Dimineață";
-        if (h >= 12 && h < 17) return "După-amiază";
-        if (h >= 17 && h < 22) return "Seară";
-        return "Noapte";
+        if (h >= 5 && h < 12) return "Morning";
+        if (h >= 12 && h < 17) return "Afternoon";
+        if (h >= 17 && h < 22) return "Evening";
+        return "Night";
+    }
+
+    private static String blockToEnglish(String roBlock) {
+        // Already English now — passthrough for safety in case of legacy data
+        return roBlock.toLowerCase(Locale.ROOT);
+    }
+
+    private static String weekdayToEnglish(String roDay) {
+        switch (roDay) {
+            case "Luni":     return "Monday";
+            case "Marți":    return "Tuesday";
+            case "Miercuri": return "Wednesday";
+            case "Joi":      return "Thursday";
+            case "Vineri":   return "Friday";
+            case "Sâmbătă":  return "Saturday";
+            case "Duminică": return "Sunday";
+            default:         return roDay;
+        }
     }
 
     private static Double pearson(List<Double> xs, List<Double> ys) {

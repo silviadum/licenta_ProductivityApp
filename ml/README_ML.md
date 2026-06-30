@@ -1,6 +1,6 @@
 # 🧠 Productivity Intelligence Engine — Setup & Run
 
-Pipeline-ul de **Machine Learning** pentru aplicația Productivity AI.
+Pipeline-ul de **Machine Learning** (clasificare 3-clase) pentru aplicația Productivity AI.
 
 ---
 
@@ -8,9 +8,9 @@ Pipeline-ul de **Machine Learning** pentru aplicația Productivity AI.
 
 | Fișier | Descriere |
 |---|---|
-| `ml_engine.py` | Modul 1 (regresie) + Modul 2 (clustering). Antrenează și salvează modelele. |
+| `ml_engine.py` | Pipeline ML: antrenare clasificator + predicție live. |
 | `seed_data.py` | Generează 60-365 zile de date test cu patternuri controlate. |
-| `productivity_insights.py` | Analiză offline cu grafice matplotlib. |
+| `productivity_insights.py` | Analiză descriptivă cu grafice matplotlib (opțional, pentru lucrare). |
 | `models/user_X/` | Modele antrenate (joblib .pkl) + metadata. |
 | `reports/` | Grafice PNG pentru lucrarea de licență. |
 
@@ -47,28 +47,26 @@ python -X utf8 ml_engine.py --user 4 --train
 
 Output așteptat:
 ```
-🤖 Modul 1: Antrenare modele de regresie...
-─────────────────────────────────────────────
-📊 REZULTATE MODELE DE REGRESIE
-─────────────────────────────────────────────
-Model                       R²      MAE     RMSE       CV R² (μ±σ)
-Ridge Regression         0.512    8.43    10.21    0.487 ± 0.043
-Gradient Boosting        0.715    5.89     7.31    0.692 ± 0.041  ⭐
-─────────────────────────────────────────────
-🏆 Cel mai bun model: Gradient Boosting
+🤖 Antrenare modele de clasificare...
+─────────────────────────────────────────────────────────────
+📊 REZULTATE MODELE DE CLASIFICARE (3 clase: SLABA / NORMALA / BUNA)
+─────────────────────────────────────────────────────────────
+Model                          Acc    Prec   Rec    F1    AUC    CV Acc
+Logistic Regression          0.576  0.562  0.576  0.565  0.717  0.548 ⭐
+Random Forest Classifier     0.485  0.464  0.485  0.470  0.645  0.506
+─────────────────────────────────────────────────────────────
+🏆 Cel mai bun model: Logistic Regression
 
-🔬 Modul 2: Gruparea comportamentală (K-Means)...
-   → k optim = 3 clustere (Silhouette = 0.412)
-   → Profiluri:
-      • Deep focus: scor=82, tasks=3.2, pomos=4.1, somn=7.8h
-      • Întreținere: scor=51, tasks=1.5, pomos=2.0, somn=7.1h
-      • Odihnă: scor=18, tasks=0.4, pomos=0.3, somn=8.5h
+Confusion Matrix (Logistic Regression):
+            Pred:  SLABA  NORMALA  BUNA
+Real    SLABA:      8       4       3
+Real  NORMALA:      5       8       9
+Real     BUNA:      2       5      22
 
-💾 Modele salvate în: D:/licenta/ProductivityApp/ml/models/user_4
+💾 Modele salvate in: ml/models/user_4
 📊 Generare rapoarte PNG...
-   📄 user_4_regression.png
-   📄 user_4_feature_importance.png
-   📄 user_4_clustering.png
+   📄 user_4_classification.png
+   📄 user_4_roc_curves.png
 ```
 
 ### 5. Testează predicția
@@ -79,11 +77,15 @@ python -X utf8 ml_engine.py --user 4 --predict
 
 Output:
 ```
-🔮 Predicție pentru User 4 — 2026-05-12:
-   Scor estimat: 68.3/100 ↑
-   Media ultimelor 7 zile: 61.2/100
-   Model: Gradient Boosting (CV R² = 0.692)
-   Antrenat pe: 287 zile
+🔮 Predicție AZI pentru User 4 — 2026-06-13:
+   Clasa estimată: Buna (BUNA)
+   Încrederea: 64.7%
+   Probabilități:
+      • SLABA: 4.0%
+      • NORMALA: 31.3%
+      • BUNA: 64.7%
+   Model: Random Forest Classifier (CV Accuracy = 0.498)
+   Antrenat pe: 365 zile
 ```
 
 ---
@@ -92,37 +94,29 @@ Output:
 
 După ce ai antrenat modelele:
 
-- **Dashboard mobil** → vezi cardul **„Predicție ML · Mâine"** (mov)
-- **Chat (sparkles icon)** → asistent rule-based instant pe datele tale reale
-- **Pagina Progres** → toate insights-urile statistice (corelație Pearson, heatmap, etc.)
+- **Dashboard mobil** → vezi cardul **„Prognoză"** care afișează un mesaj natural pe baza clasei prezise
+- **Pagina Progres** → toate insights-urile statistice (corelație Pearson, heatmap, recomandări, etc.) calculate live de backend
 
 ---
 
 ## 📊 Pentru lucrarea de licență
 
-După `--train`, în folderul `reports/` vei avea 3 PNG-uri perfect de pus în capitolul 4.3:
+După `--train`, în folderul `reports/` vei avea 2 PNG-uri pentru capitolul 4.3:
 
-1. **`user_X_regression.png`** — comparație R², MAE, predicție vs. realitate
-2. **`user_X_feature_importance.png`** — ce caracteristici contează pentru tine (din Gradient Boosting)
-3. **`user_X_clustering.png`** — Elbow + Silhouette + vizualizare PCA 2D
+1. **`user_X_classification.png`** — 4 subploturi: comparație metrici (accuracy, precision, recall, F1), CV stability, **confusion matrix**, distribuție clase
+2. **`user_X_roc_curves.png`** — curbe ROC (one-vs-rest) pentru fiecare clasă × fiecare model
 
 ---
 
 ## 🧠 Algoritmii folosiți (sinteză pentru lucrare)
 
-### Modul 1 — Regresie supervizată
-- **Ridge Regression** — baseline liniar cu regularizare L2
-- **Gradient Boosting** — ensemble de arbori construit iterativ, gold standard pentru date tabelare
-- **Feature engineering**: lag features (3 zile), rolling mean (3 și 7 zile), codificare ciclică sin/cos a zilei săptămânii
-- **Validare**: train/test split 80/20 + k-fold cross-validation (k=5)
-- **Metrici**: R², MAE, RMSE
-
-### Modul 2 — Clustering nesupervizat
-- **K-Means** cu numărul optim de clustere determinat prin:
-  - **Metoda Elbow** (curba WCSS)
-  - **Scorul Silhouette** (cohesiune + separare)
-- **PCA** (Principal Component Analysis) pentru reducerea dimensionalității la 2D și vizualizare
-- **Profilarea clusterelor**: zile de focus / întreținere / odihnă
+### Clasificare 3-clase
+- **Țintă:** ziua DE AZI e SLABĂ (scor < 40) / NORMALĂ (40-70) / BUNĂ (> 70)
+- **Logistic Regression** — clasificator liniar cu regularizare L2, baseline
+- **Random Forest Classifier** — ensemble de arbori cu class_weight balanced
+- **Feature engineering**: 12 caracteristici — lag features (scoruri din ultimele 3 zile), rolling mean (3 și 7 zile, fără azi), codificare ciclică sin/cos a zilei săptămânii (azi), ore + calitate somn (azi-noapte), activitatea din ZIUA PRECEDENTĂ (taskuri, Pomodoros, rata obiceiurilor)
+- **Validare**: train/test split temporal 80/20 + k-fold cross-validation (k=5)
+- **Metrici**: accuracy, precision, recall, F1-score, ROC-AUC (one-vs-rest weighted), confusion matrix
 
 ---
 
